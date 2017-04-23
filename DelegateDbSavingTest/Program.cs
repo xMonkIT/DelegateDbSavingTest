@@ -10,16 +10,24 @@ namespace DelegateDbSavingTest
     {
         static void Main(string[] args)
         {
+            DropDatabase();
+            FillDatabase();
+
             using (var context = new DelegateSaver())
-            {
-                if (context.DelegateWrappers.Count() < 2) FillDatabase();
-
-                context.DelegateWrappers.ToList().ForEach(x => x.DoWork("first", "second"));
-            }
-
+                context.DelegateWrappers.ToList().ForEach(x => Console.WriteLine(x.DoWork("first", "second")));
+            
             Console.Write("program finished, push any key...");
             Console.ReadKey();
 
+        }
+
+        static void DropDatabase()
+        {
+            using (var context = new DelegateSaver())
+            {
+                context.DelegateWrappers.RemoveRange(context.DelegateWrappers);
+                context.SaveChanges();
+            }
         }
 
         static void FillDatabase()
@@ -28,8 +36,8 @@ namespace DelegateDbSavingTest
             {
                 context.DelegateWrappers.AddRange(new[]
                 {
-                    new DelegateWrapper{Delegate = (x, y) => x.ToString().Take(3).ToString()},
-                    new DelegateWrapper{Delegate = (x, y) => y.ToString().Take(3).ToString()}
+                    new DelegateWrapper{Delegate = (x, y) => string.Join("", x.ToString().Take(3))},
+                    new DelegateWrapper{Delegate = (x, y) => string.Join("", y.ToString().Take(3))}
                 });
                 context.SaveChanges();
             }
